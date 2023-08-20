@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 
@@ -14,9 +16,25 @@ class _HomeContentState extends State<HomeContent> {
   TextEditingController footController = TextEditingController();
   TextEditingController inchController = TextEditingController();
   TextEditingController weightController = TextEditingController();
-  double? height, foot = 0.0, inch = 0.0, weight, bmi, diffCalc;
+  Queue<String> queue = Queue<String>();
+  Queue<String> heiq = Queue<String>();
+  Queue<String> weiq = Queue<String>();
+  Queue<String> bmiq = Queue<String>();
+  Queue<String> catq = Queue<String>();
+  List dep = List.empty();
+  Color hisc = Color.fromARGB(0, 0, 0, 0);
+  double? height,
+      foot = 0.0,
+      inch = 0.0,
+      weight,
+      bmi,
+      diffCalc,
+      pwq,
+      foop,
+      heigp;
   String? res, category, difference;
   bool showChart = false,
+      showHist = false,
       youAreSUnderW = false,
       youAreUWeight = false,
       youAreNormal = false,
@@ -108,7 +126,7 @@ class _HomeContentState extends State<HomeContent> {
                                             double?.parse(footController.text);
                                     height = foot! / 3.2808;
                                     height = height! * height!;
-                                    calc(value);
+                                    // calc(value);
                                   },
                                   decoration: InputDecoration(
                                       labelText: "Foot(')",
@@ -140,10 +158,11 @@ class _HomeContentState extends State<HomeContent> {
                                         ? inch = 0.0
                                         : inch =
                                             double.parse(inchController.text);
+                                    foop = foot;
                                     foot = foot! + inch! / 12 - oldValue! / 12;
                                     height = foot! / 3.2808;
                                     height = height! * height!;
-                                    calc(value);
+                                    // calc(value);
                                   },
                                   decoration: InputDecoration(
                                       labelText: 'Inch(")',
@@ -172,11 +191,12 @@ class _HomeContentState extends State<HomeContent> {
                             heightController.text.isEmpty
                                 ? height = 0.0
                                 : height = double?.parse(heightController.text);
+                            heigp = height;
                             dropdownvalueh == "cm"
                                 ? height = height! / 100
                                 : height = height;
                             height = height! * height!;
-                            calc(value);
+                            // calc(value);
                           },
                           decoration: InputDecoration(
                               labelText: dropdownvalueh == "m"
@@ -250,7 +270,8 @@ class _HomeContentState extends State<HomeContent> {
                             weightController.text.isEmpty
                                 ? weight = 0.0
                                 : weight = double.parse(weightController.text);
-                            calc(value);
+                            pwq = weight;
+                            // calc(value);
                           },
                         ),
                       )
@@ -262,8 +283,9 @@ class _HomeContentState extends State<HomeContent> {
                             weightController.text.isEmpty
                                 ? weight = 0.0
                                 : weight = double.parse(weightController.text);
+                            pwq = weight;
                             weight = weight! / 2.2046;
-                            calc(value);
+                            // calc(value);
                           },
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
@@ -299,6 +321,39 @@ class _HomeContentState extends State<HomeContent> {
                     });
                   },
                 ),
+              ],
+            ),
+            const Padding(padding: EdgeInsets.all(12.0)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                    onPressed: () {
+                      calc(1);
+                      queue.add("$height $weight $bmi $category");
+                      if (dropdownvalueh == "ft")
+                        heiq.add("$foop" + '"' + " $inch'");
+                      else if (dropdownvalueh == "cm")
+                        heiq.add("$heigp cm");
+                      else
+                        heiq.add("$heigp m");
+
+                      if (dropdownvaluew == "kg")
+                        weiq.add("$pwq kg");
+                      else
+                        weiq.add("$pwq lb");
+
+                      bmiq.add("$bmi");
+                      catq.add("$category");
+                      if (queue.length == 11) {
+                        queue.removeFirst();
+                        heiq.removeFirst();
+                        weiq.removeFirst();
+                        bmiq.removeFirst();
+                        catq.removeFirst();
+                      }
+                    },
+                    child: const Text("Calculate"))
               ],
             ),
             const Padding(
@@ -574,28 +629,28 @@ class _HomeContentState extends State<HomeContent> {
                       Text(
                         "17.0-18.4",
                         style: youAreUWeight
-                            ? const TextStyle(color: Colors.blue)
+                            ? const TextStyle(color: Colors.blueAccent)
                             : const TextStyle(color: Colors.white),
                       ),
                       const Text(""),
                       Text(
                         "18.5-24.9",
                         style: youAreNormal
-                            ? const TextStyle(color: Colors.blue)
+                            ? const TextStyle(color: Colors.greenAccent)
                             : const TextStyle(color: Colors.white),
                       ),
                       const Text(""),
                       Text(
                         "25.0-29.9",
                         style: youAreOWeight
-                            ? const TextStyle(color: Colors.blue)
+                            ? const TextStyle(color: Colors.redAccent)
                             : const TextStyle(color: Colors.white),
                       ),
                       const Text(""),
                       Text(
                         "≥30.0",
                         style: youAreObese
-                            ? const TextStyle(color: Colors.blue)
+                            ? const TextStyle(color: Colors.red)
                             : const TextStyle(color: Colors.white),
                       ),
                     ],
@@ -604,6 +659,150 @@ class _HomeContentState extends State<HomeContent> {
               ),
             ),
             const Padding(padding: EdgeInsets.all(10.0)),
+            const Padding(
+                padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                child: Divider(
+                  height: 20.0,
+                  indent: 5.0,
+                  color: Color.fromARGB(255, 32, 31, 31),
+                )),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                if (showHist) {
+                  showHist = false;
+                } else {
+                  showHist = true;
+                }
+                setState(() {
+                  showHist;
+                });
+              },
+              child: Row(
+                children: [
+                  showHist == true
+                      ? const Icon(
+                          Icons.keyboard_arrow_down_sharp,
+                          color: Colors.white,
+                        )
+                      : const Icon(
+                          Icons.keyboard_arrow_right_sharp,
+                          color: Colors.white,
+                        ),
+                  const Text("History")
+                ],
+              ),
+            ),
+            const Padding(padding: EdgeInsets.all(10.0)),
+            Visibility(
+              visible: showHist,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  const Padding(
+                      padding: EdgeInsetsDirectional.only(start: 10.0)),
+                  Container(
+                    padding: EdgeInsets.all(10.0),
+                    color: const Color.fromRGBO(255, 163, 26, 1),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Column(
+                          children: const [
+                            Text(
+                              "Height",
+                              style: TextStyle(fontSize: 21.0),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: const [
+                            Text(
+                              "Weight",
+                              style: TextStyle(fontSize: 21.0),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: const [
+                            Text(
+                              "Bmi",
+                              style: TextStyle(fontSize: 21.0),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: const [
+                            Text(
+                              "  ",
+                              style: TextStyle(fontSize: 21.0),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: const [
+                            Text(
+                              "Condition",
+                              style: TextStyle(fontSize: 21.0),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: const [
+                            Text(
+                              "  ",
+                              style: TextStyle(fontSize: 21.0),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: queue.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final hist = queue.toList().reversed.toList();
+                        final hiep = heiq.toList().reversed.toList();
+                        final weip = weiq.toList().reversed.toList();
+                        final bmip = bmiq.toList().reversed.toList();
+                        final catp = catq.toList().reversed.toList();
+                        return ListTile(
+                            title: Container(
+                          padding: EdgeInsets.all(10.0),
+                          color: catp[index] == "Severly Under Weight"
+                              ? Colors.blue
+                              : catp[index] == "Normal"
+                                  ? Colors.green
+                                  : catp[index] == "Under Weight"
+                                      ? Colors.blueAccent
+                                      : catp[index] == "Over Weight"
+                                          ? Colors.redAccent
+                                          : catp[index] == "Obese"
+                                              ? Colors.red
+                                              : Colors.orange,
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Column(
+                                  children: [Text("${hiep[index]}")],
+                                ),
+                                Column(
+                                  children: [Text("${weip[index]}")],
+                                ),
+                                Column(
+                                  children: [Text("${bmip[index]}")],
+                                ),
+                                Column(
+                                  children: [Text("${catp[index]}")],
+                                )
+                              ]),
+                        ));
+                      }),
+                  const Padding(padding: EdgeInsets.all(12.0)),
+                ],
+              ),
+            ),
           ],
         ),
       ),
